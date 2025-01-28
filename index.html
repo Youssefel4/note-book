@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Taking App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen p-4 flex flex-col">
+    <h1 class="text-3xl font-bold mb-4">Note Taking App</h1>
+    <div class="flex flex-grow">
+        <div class="w-1/2 p-4 bg-white rounded-lg shadow-md">
+            <input type="text" id="title" class="block w-full p-2 mb-4 text-lg font-bold border border-gray-300 rounded-lg" placeholder="Note Title">
+            <textarea id="content" class="block w-full h-64 p-2 mb-4 text-lg border border-gray-300 rounded-lg"></textarea>
+            <button id="create-note" class="w-full p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">Create Note</button>
+        </div>
+        <div class="w-1/2 p-4 ml-4 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Notes</h2>
+            <ul id="notes-list" class="list-none p-0 m-0">
+                <!-- Notes will be listed here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialize notes object
+        let notes = {};
+
+        // Load notes from local storage
+        if (localStorage.getItem('notes')) {
+            notes = JSON.parse(localStorage.getItem('notes'));
+        }
+
+        // Function to create a new note
+        function createNote() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            if (title && content) {
+                const noteId = Date.now();
+                notes[noteId] = { title, content };
+                displayNotes();
+                saveNotes();
+                document.getElementById('title').value = '';
+                document.getElementById('content').value = '';
+            }
+        }
+
+        // Function to display notes
+        function displayNotes() {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '';
+            for (const noteId in notes) {
+                const note = notes[noteId];
+                const noteElement = document.createElement('li');
+                noteElement.classList.add('p-2', 'border', 'border-gray-300', 'rounded-lg', 'mb-2');
+                noteElement.innerHTML = `
+                    <h3 class="text-lg font-bold">${note.title}</h3>
+                    <p class="text-lg">${note.content}</p>
+                    <button class="float-right p-2 bg-red-500 text-white rounded-lg hover:bg-red-700" onclick="deleteNote(${noteId})">Delete</button>
+                `;
+                notesList.appendChild(noteElement);
+            }
+        }
+
+        // Function to delete a note
+        function deleteNote(noteId) {
+            delete notes[noteId];
+            displayNotes();
+            saveNotes();
+        }
+
+        // Function to save notes to local storage
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        // Display existing notes
+        displayNotes();
+
+        // Add event listener to create note button
+        document.getElementById('create-note').addEventListener('click', createNote);
+
+        // Add event listener to window before unload
+        window.addEventListener('beforeunload', function() {
+            saveNotes();
+        });
+    </script>
+</body>
+</html>
